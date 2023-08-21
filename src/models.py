@@ -14,41 +14,76 @@ class User(Base):
     # Notice that each column is also a normal Python instance attribute.
     id = Column(Integer, primary_key=True)
     username = Column(Integer, primary_key=True)
-    firstname = Column(String(250), nullable=False)
-    lastname = Column(String(250), nullable=False)
+    firstname = Column(String(250))
+    lastname = Column(String(250))
     email = Column(String(250), unique = True, nullable=False)
 
-class Post(Base):
-    __tablename__ = 'post'
+    def serialize(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "firstname": self.firstname,
+            "lastname": self.lastname,
+            "email": self.email
+        }
+
+class Gender(enum.Enum):
+    male = 1
+    female = 2
+    NA = 3
+
+class Character(Base):
+    __tablename__ = 'character'
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id'))
+    name = Column(String(250), nullable=False)
+    birth_year = Column(String(250), nullable = False)
+    gender = Column(Enum(Gender))
+    height = Column(Integer, nullable=False)
+    skin_color = Column(String(250), nullable=False)
+    eye_color = Column(String(250), nullable =False)
 
-class MyEnum(enum.Enum):
-    photo = 1
-    video = 2
-
-class Media(Base):
-    __tablename__ = 'media'
+    def todic(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "birth_year": self.birth_year,
+            "gender": self.gender,
+            "height": self.height,
+            "skin_color": self.skin_color,
+            "eye_color": self.eye_color
+        }
+    
+class Planet(Base):
+    __tablename__='planet'
     id = Column(Integer, primary_key=True)
-    type = Column(Enum(MyEnum))
-    url = Column(String(250), nullable=False)
-    post_id = Column(Integer, ForeignKey('post.id'))
+    name = Column(String(250), nullable=False)
+    climate = Column(String(250), nullable=False)
+    population = Column(Integer, nullable=False)
+    orbital_period = Column(Integer, nullable=False)
+    rotation_period = Column(Integer, nullable=False)
+    diameter = Column(Integer, nullable=False)
 
-class Comment(Base):
-    __tablename__ = 'comment'
-    id = Column(Integer, primary_key=True)
-    comment_text = Column(String(250), nullable=False)
-    author_id = Column(Integer, ForeignKey('user.id'))
-    post_id = Column(Integer, ForeignKey('post.id'))
-
-class Follower(Base):
-    __tablename__ = 'follower'
-    id = Column(Integer, primary_key = True)
-    user_from_id = Column(Integer, ForeignKey('user.id'))
-    user_to_id = Column(Integer, ForeignKey('user.id'))
-
-    def to_dict(self):
+    def todic(self):
         return {}
 
+class Category(enum.Enum):
+    character = 1
+    planet = 2
+
+class Favorite(Base):
+    __tablename__ = 'favorite'
+    id = Column(Integer, primary_key = True)
+    name = Column(String(250), unique=True)
+    type = Column(Enum(Category))
+    planet_id = Column(Integer, ForeignKey('planet.id'))
+    character_id = Column(Integer, ForeignKey('character.id'))
+    user = Column(Integer, ForeignKey('user.id'))
+
+
 ## Draw from SQLAlchemy base
-render_er(Base, 'diagram.png')
+try:
+    result = render_er(Base, 'diagram.png')
+    print("Success! Check the diagram.png file")
+except Exception as e:
+    print("There was a problem genering the diagram")
+    raise e
